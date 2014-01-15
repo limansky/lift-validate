@@ -21,6 +21,8 @@ import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JE._
 import net.liftweb.http.js.jquery.JqJE._
 import net.liftweb.http.S
+import net.liftweb.json.JObject
+import net.liftweb.json.JsonDSL._
 
 /**
  * Base Validate
@@ -41,7 +43,18 @@ abstract class Validate(implicit val ctx: ValidateContext) {
   /**
    * JavaScript rule to be checked. See http://jqueryvalidation.org/rules
    */
-  def jsRule: JsObj
+  def jsRule: JObject = messages map (msg =>
+    check merge (("messages" -> msg): JObject)) getOrElse check
+
+  /**
+   * Message js rule part.
+   */
+  def messages: Option[JObject]
+
+  /**
+   * Check js rule part
+   */
+  def check: JObject
 
   /**
    * Server side validation.
@@ -53,7 +66,7 @@ abstract class Validate(implicit val ctx: ValidateContext) {
 
     field.map(n => {
       fieldName = n
-      val elem = Jq(s"[name='$n']")
+      val elem = Jq("[name='" + n + "']")
       val js = elem ~> JsFunc("rules", "add", jsRule)
       if (!ctx.hasRules) {
         val opts = JsObj("highlight" -> Validate.bs3highlight,

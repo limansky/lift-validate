@@ -10,7 +10,7 @@ licenses += ("Apache 2.0 License", url("http://www.apache.org/licenses/LICENSE-2
 
 homepage := Some(url("http://github.com/limansky/lift-validate"))
 
-liftVersion <<= liftVersion ?? "2.5.1"
+liftVersion <<= liftVersion ?? "2.6-M2"
 
 liftEdition <<= liftVersion apply { _.substring(0,3) }
 
@@ -22,9 +22,10 @@ crossScalaVersions := Seq("2.9.2")
 
 resolvers += "Java.net Maven2 Repository" at "http://download.java.net/maven/2/"
 
-libraryDependencies <+= liftVersion { v =>
-  "net.liftweb"     %% "lift-webkit"    % v         % "provided"
-}
+libraryDependencies <++= liftVersion { v => Seq(
+  "net.liftweb"     %% "lift-webkit"    % v         % "provided",
+  "net.liftweb"     %% "lift-json"      % v         % "provided"
+)}
 
 libraryDependencies ++= Seq(
   "org.scalatest"   %% "scalatest"      % "1.9.2"   % "test"

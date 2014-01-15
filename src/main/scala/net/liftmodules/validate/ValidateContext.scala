@@ -41,16 +41,22 @@ package net.liftmodules.validate
  * }
  * }}}
  */
-class ValidateContext {
-  var rules = List.empty[Validate]
+abstract class ValidateContext {
+  def addValidate(validate: Validate): Unit
+  def validate(): Boolean
+  def hasRules(): Boolean
+}
 
-  def addValidate(validate: Validate) = {
-    rules = validate :: rules
+object ValidateContext {
+  def apply() = new ValidateContext {
+
+    var rules = List.empty[Validate]
+
+    override def addValidate(validate: Validate): Unit = rules = validate :: rules
+
+    override def validate: Boolean = rules.map(_.validate).forall(validated => validated)
+
+    override def hasRules: Boolean = rules.nonEmpty
   }
 
-  def validate(): Boolean = {
-    rules.map(_.validate).forall(validated => validated)
-  }
-
-  def hasRules = rules.nonEmpty
 }

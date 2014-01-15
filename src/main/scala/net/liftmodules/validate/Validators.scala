@@ -18,6 +18,8 @@ package net.liftmodules.validate
 import scala.xml._
 import net.liftweb.http.S
 import net.liftweb.http.js.JE._
+import net.liftweb.json.{ JObject }
+import net.liftweb.json.JsonDSL._
 
 object Validators extends Validators
 
@@ -35,39 +37,41 @@ trait Validators {
 
   case class ValidateRequired(
       override val value: () => String,
-      errorMessage: String,
+      errorMessage: Option[String],
       isEnabled: () => Boolean = () => true)(override implicit val ctx: ValidateContext) extends Validate {
 
     override def validate() = {
       if (isEnabled() && (value() == null || value().trim() == "")) {
-        S.error(errorMessage)
+//        S.error(errorMessage)
         false
       } else true
     }
 
-    override def jsRule = {
-      JsObj("required" -> true,
-        "messages" -> JsObj("required" -> errorMessage))
+    override def check: JObject = {
+        "required" -> true
+    }
+
+    override def messages: Option[JObject] = {
+      errorMessage map (m => "required" -> m)
     }
   }
 
   case class ValidateEmail(
       override val value: () => String,
-      errorMessage: String)(override implicit val ctx: ValidateContext) extends Validate {
+      errorMessage: Option[String])(override implicit val ctx: ValidateContext) extends Validate {
 
     override def validate() = {
       val v = if (value() == null) "" else value().trim()
       // FIXME: Really stupid validation
-      if (v != "" && !v.contains("@")) {
-        S.error(errorMessage)
+      if (v != "" && !v.matches("[^@]+@[^@.]+\\.[^@]+")) {
+//        S.error(errorMessage)
         false
       } else true
     }
 
-    override def jsRule = {
-      JsObj("email" -> true,
-        "messages" -> JsObj("email" -> errorMessage))
-    }
+    override def check: JObject = "email" -> true
+
+    override def messages: Option[JObject] = errorMessage map (m => "email" -> m)
   }
 
 }

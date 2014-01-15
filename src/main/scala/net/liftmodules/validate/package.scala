@@ -15,10 +15,18 @@
  */
 package net.liftmodules.validate
 
+import net.liftweb.http.RequestVar
 package object global {
 
   implicit val dummyContext = new ValidateContext {
+
+    object rules extends RequestVar[List[Validate]](List.empty)
+
+    override def addValidate(validate: Validate) = rules.update(validate :: _)
+
     override def validate(): Boolean =
       throw new UnsupportedOperationException("Validate called on dummy context!")
+
+    override def hasRules(): Boolean = rules.nonEmpty
   }
 }
