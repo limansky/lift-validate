@@ -39,23 +39,14 @@ trait Validators {
 
   case class ValidateRequired(
       override val value: () => String,
-      errorMessage: Option[String] = None,
+      override val errorMessage: Option[String] = None,
       isEnabled: () => Boolean = () => true)(override implicit val ctx: ValidateContext) extends Validate {
 
-    override def validate() = {
-      if (isEnabled() && (value() == null || value().trim() == "")) {
-        //        S.error(errorMessage)
-        false
-      } else true
-    }
+    override def validate() = !isEnabled() || (value() != null && value().trim() != "")
 
-    override def check: JObject = {
-      "required" -> true
-    }
+    override def check: JObject = "required" -> true
 
-    override def messages: Option[JObject] = {
-      errorMessage map (m => "required" -> m)
-    }
+    override def messages: Option[JObject] = errorMessage map (m => "required" -> m)
   }
 
   object ValidateRequired {
@@ -68,15 +59,11 @@ trait Validators {
 
   case class ValidateEmail(
       override val value: () => String,
-      errorMessage: Option[String] = None)(override implicit val ctx: ValidateContext) extends Validate {
+      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidateContext) extends Validate {
 
     override def validate() = {
       val v = if (value() == null) "" else value().trim()
-      // FIXME: Really stupid validation
-      if (v != "" && !v.matches("[^@]+@[^@.]+\\.[^@]+")) {
-        //        S.error(errorMessage)
-        false
-      } else true
+      v == "" || !v.matches("[^@]+@[^@.]+\\.[^@]+")
     }
 
     override def check: JObject = "email" -> true
@@ -89,17 +76,18 @@ trait Validators {
       ValidateEmail(value, Some(errorMessage))
   }
 
-  case class ValidateInt(min: Option[Int], max: Option[Int], override val value: () => String, errorMessage: Option[String] = None)(override implicit val ctx: ValidateContext) extends Validate {
+  case class ValidateInt(
+      min: Option[Int],
+      max: Option[Int],
+      override val value: () => String,
+      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidateContext) extends Validate {
 
     override def validate() = {
-      val trimmed = value().trim()
-      val res = if (!trimmed.isEmpty) {
-        val ival = trimmed.toInt
+      import net.liftweb.util.Helpers.tryo
+      val v = if (value() == null) "" else value().trim()
+      !v.isEmpty || (tryo(v.toInt).map(ival =>
         min.map(_ <= ival).getOrElse(true) && max.map(_ >= ival).getOrElse(true)
-      } else true
-      //      if (!res)
-      //        S.error(errorMessage)
-      res
+      ) getOrElse false)
     }
 
     override def check: JObject = {
@@ -135,14 +123,9 @@ trait Validators {
   case class ValidateEquals(override val value: () => String,
       val expected: () => String,
       selector: String,
-      errorMessage: Option[String] = None)(override implicit val ctx: ValidateContext) extends Validate {
+      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidateContext) extends Validate {
 
-    override def validate() = {
-      if (value() != expected()) {
-        //S.error(errorMessage)
-        false
-      } else true
-    }
+    override def validate() = value() == expected()
 
     override def check: JObject = "equalTo" -> selector
 
@@ -158,9 +141,7 @@ trait Validators {
       override val value: () => String,
       func: String => (Boolean, Option[String]))(override implicit val ctx: ValidateContext) extends Validate {
 
-    override def validate() = {
-      func(value())._1
-    }
+    override def validate() = func(value())._1
 
     override def check: JObject = {
       import S.NFuncHolder
@@ -170,7 +151,6 @@ trait Validators {
           S.request match {
             case Full(req) =>
               val obj: JValue = req.param(fieldName).map(v => {
-                println(v)
                 val (r, m) = func(v)
                 if (r) {
                   JBool(true)
@@ -189,6 +169,7 @@ trait Validators {
       }
     }
 
+    override val errorMessage = None
     override def messages: Option[JObject] = None
   }
 }

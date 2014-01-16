@@ -56,6 +56,8 @@ abstract class Validate(implicit val ctx: ValidateContext) {
    */
   def check: JObject
 
+  val errorMessage: Option[String]
+
   /**
    * Server side validation.
    */
@@ -75,7 +77,6 @@ abstract class Validate(implicit val ctx: ValidateContext) {
       }
       S.appendJs(js)
       ctx.addValidate(this)
-      val requid = S.request.map(_.id)
     })
     in
   }
