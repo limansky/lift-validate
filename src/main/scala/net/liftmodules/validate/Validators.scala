@@ -41,30 +41,30 @@ trait Validators {
   case class ValidateRequired(
       override val value: () => String,
       override val errorMessage: Option[String] = None,
-      isEnabled: () => Boolean = () => true)(override implicit val ctx: ValidateContext) extends Validate {
+      isEnabled: () => Boolean = () => true)(override implicit val ctx: ValidationContext) extends Validate {
 
     override def validate() = !isEnabled() || (value() != null && value().trim() != "")
 
-    override def check: JObject = "required" -> true
+    override def check: JObject = if (isEnabled()) "required" -> true else JObject(Nil)
 
     override def messages: Option[JObject] = errorMessage map (m => "required" -> m)
   }
 
   object ValidateRequired {
-    def apply(value: () => String, errorMessage: String, isEnabled: () => Boolean)(implicit ctx: ValidateContext): ValidateRequired =
+    def apply(value: () => String, errorMessage: String, isEnabled: () => Boolean)(implicit ctx: ValidationContext): ValidateRequired =
       ValidateRequired(value, Some(errorMessage), isEnabled)
 
-    def apply(value: () => String, errorMessage: String)(implicit ctx: ValidateContext): ValidateRequired =
+    def apply(value: () => String, errorMessage: String)(implicit ctx: ValidationContext): ValidateRequired =
       ValidateRequired(value, Some(errorMessage))
   }
 
   case class ValidateEmail(
       override val value: () => String,
-      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidateContext) extends Validate {
+      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validate {
 
     override def validate() = {
       val v = if (value() == null) "" else value().trim()
-      v == "" || !v.matches("[^@]+@[^@.]+\\.[^@]+")
+      v == "" || v.matches("[^@]+@[^@.]+\\.[^@]+")
     }
 
     override def check: JObject = "email" -> true
@@ -73,7 +73,7 @@ trait Validators {
   }
 
   object ValidateEmail {
-    def apply(value: () => String, errorMessage: String)(implicit ctx: ValidateContext): ValidateEmail =
+    def apply(value: () => String, errorMessage: String)(implicit ctx: ValidationContext): ValidateEmail =
       ValidateEmail(value, Some(errorMessage))
   }
 
@@ -81,7 +81,7 @@ trait Validators {
       min: Option[Int],
       max: Option[Int],
       override val value: () => String,
-      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidateContext) extends Validate {
+      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validate {
 
     override def validate() = {
       import net.liftweb.util.Helpers.tryo
@@ -111,20 +111,20 @@ trait Validators {
   }
 
   object ValidateInt {
-    def apply(min: Option[Int], max: Option[Int], value: () => String, errorMessage: String)(implicit ctx: ValidateContext): ValidateInt =
+    def apply(min: Option[Int], max: Option[Int], value: () => String, errorMessage: String)(implicit ctx: ValidationContext): ValidateInt =
       ValidateInt(min, max, value, Some(errorMessage))
 
-    def apply(value: () => String, errorMessage: String)(implicit ctx: ValidateContext): ValidateInt =
+    def apply(value: () => String, errorMessage: String)(implicit ctx: ValidationContext): ValidateInt =
       ValidateInt(None, None, value, Some(errorMessage))
 
-    def apply(value: () => String)(implicit ctx: ValidateContext): ValidateInt =
+    def apply(value: () => String)(implicit ctx: ValidationContext): ValidateInt =
       ValidateInt(None, None, value)
   }
 
   case class ValidateEquals(override val value: () => String,
       val expected: () => String,
       selector: String,
-      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidateContext) extends Validate {
+      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validate {
 
     override def validate() = value() == expected()
 
@@ -134,13 +134,13 @@ trait Validators {
   }
 
   object ValidateEquals {
-    def apply(value: () => String, expected: () => String, selector: String, errorMessage: String)(implicit ctx: ValidateContext): ValidateEquals =
+    def apply(value: () => String, expected: () => String, selector: String, errorMessage: String)(implicit ctx: ValidationContext): ValidateEquals =
       ValidateEquals(value, expected, selector, Some(errorMessage))
   }
 
   case class ValidateRemote(
       override val value: () => String,
-      func: String => (Boolean, Option[String]))(override implicit val ctx: ValidateContext) extends Validate {
+      func: String => (Boolean, Option[String]))(override implicit val ctx: ValidationContext) extends Validate {
 
     override def validate() = func(value())._1
 
@@ -178,8 +178,7 @@ trait Validators {
       min: Option[Int],
       max: Option[Int],
       override val value: () => String,
-      override val errorMessage: Option[String] = None
-      )(override implicit val ctx: ValidateContext) extends Validate with Loggable {
+      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validate with Loggable {
 
     override def validate(): Boolean = {
       Option(value()) map (s => {
@@ -207,7 +206,7 @@ trait Validators {
     }
 
     override def messages: Option[JObject] = {
-      errorMessage map(msg =>
+      errorMessage map (msg =>
         (min, max) match {
           case (Some(_), Some(_)) => "rangelength" -> msg
           case (Some(_), None) => "minlength" -> msg
@@ -221,8 +220,7 @@ trait Validators {
   }
 
   object ValidateLength {
-    def apply(min: Option[Int], max: Option[Int], value: () => String, errorMessage: String)
-             (implicit ctx: ValidateContext): ValidateLength =
+    def apply(min: Option[Int], max: Option[Int], value: () => String, errorMessage: String)(implicit ctx: ValidationContext): ValidateLength =
       ValidateLength(min, max, value, Some(errorMessage))
   }
 }

@@ -16,20 +16,20 @@
 package net.liftmodules.validate
 
 import scala.xml.Elem
-import net.liftweb.http.js.JsObj
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JE._
 import net.liftweb.http.js.jquery.JqJE._
 import net.liftweb.http.S
 import net.liftweb.json.JObject
 import net.liftweb.json.JsonDSL._
+import net.liftweb.json.JsonAST._
 
 /**
  * Base Validate
  *
  * Validates generates JavaScript code for different checks.
  */
-abstract class Validate(implicit val ctx: ValidateContext) {
+abstract class Validate(implicit val ctx: ValidationContext) {
   /**
    * Value to be checked
    */
@@ -71,8 +71,9 @@ abstract class Validate(implicit val ctx: ValidateContext) {
       val elem = Jq("[name='" + n + "']")
       val js = elem ~> JsFunc("rules", "add", jsRule)
       if (!ctx.hasRules) {
-        val opts = JsObj("highlight" -> Validate.bs3highlight,
-          "success" -> Validate.bs3success)
+        val hl = ctx.highlight map (h => JsObj("highlight" -> h))
+        val ss = ctx.success map (s => JsObj("success" -> s))
+        val opts = List(hl, ss).flatten.reduceLeft(_ +* _)
         S.appendJs(elem ~> JsFunc("closest", "form") ~> JsFunc("validate", opts))
       }
       S.appendJs(js)
@@ -83,20 +84,6 @@ abstract class Validate(implicit val ctx: ValidateContext) {
 }
 
 object Validate {
-
-  val bs3highlight = AnonFunc("label",
-    Jq(JsVar("label")) ~> JsFunc("closest", ".form-group")
-      ~> JsFunc("removeClass", "has-success")
-      ~> JsFunc("addClass", "has-error")
-  )
-
-  val bs3success = AnonFunc("label",
-    Jq(JsVar("label")) //~> JsFunc("text", "Ok!")
-      ~> JsFunc("addClass", "valid")
-      ~> JsFunc("closest", ".form-group")
-      ~> JsFunc("removeClass", "has-error")
-      ~> JsFunc("addClass", "has-success")
-  )
 
   def init() = {
     import net.liftweb.http.ResourceServer
