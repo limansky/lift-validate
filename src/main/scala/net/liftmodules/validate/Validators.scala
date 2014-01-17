@@ -22,6 +22,7 @@ import net.liftweb.json._
 import net.liftweb.json.JsonDSL._
 import net.liftweb.json.{ JObject, JField, JNull }
 import net.liftweb.common.Full
+import net.liftweb.common.Loggable
 
 object Validators extends Validators
 
@@ -101,9 +102,9 @@ trait Validators {
 
     override def messages: Option[JObject] = errorMessage map (m => {
       (min, max) match {
-        case (Some(mi), Some(ma)) => "range" -> m
-        case (Some(mi), None) => "min" -> m
-        case (None, Some(ma)) => "max" -> m
+        case (Some(_), Some(_)) => "range" -> m
+        case (Some(_), None) => "min" -> m
+        case (None, Some(_)) => "max" -> m
         case (None, None) => "number" -> m
       }
     })
@@ -171,5 +172,57 @@ trait Validators {
 
     override val errorMessage = None
     override def messages: Option[JObject] = None
+  }
+
+  case class ValidateLength(
+      min: Option[Int],
+      max: Option[Int],
+      override val value: () => String,
+      override val errorMessage: Option[String] = None
+      )(override implicit val ctx: ValidateContext) extends Validate with Loggable {
+
+    override def validate(): Boolean = {
+      Option(value()) map (s => {
+        val len = s.length
+        (min, max) match {
+          case (Some(mi), Some(ma)) => len >= mi && len <= ma
+          case (Some(mi), None) => len >= mi
+          case (None, Some(ma)) => len <= ma
+          case _ =>
+            logger.warn("Both min and max are None")
+            true
+        }
+      }) getOrElse true
+    }
+
+    override def check(): JObject = {
+      (min, max) match {
+        case (Some(mi), Some(ma)) => "rangelength" -> List(mi, ma)
+        case (Some(mi), None) => "minlength" -> mi
+        case (None, Some(ma)) => "maxlength" -> ma
+        case _ =>
+          logger.warn("Both min and max are None")
+          JObject(Nil)
+      }
+    }
+
+    override def messages: Option[JObject] = {
+      errorMessage map(msg =>
+        (min, max) match {
+          case (Some(_), Some(_)) => "rangelength" -> msg
+          case (Some(_), None) => "minlength" -> msg
+          case (None, Some(_)) => "maxlength" -> msg
+          case _ =>
+            logger.warn("Both min and max are None")
+            JObject(Nil)
+        }
+      )
+    }
+  }
+
+  object ValidateLength {
+    def apply(min: Option[Int], max: Option[Int], value: () => String, errorMessage: String)
+             (implicit ctx: ValidateContext): ValidateLength =
+      ValidateLength(min, max, value, Some(errorMessage))
   }
 }
