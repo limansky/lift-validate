@@ -31,7 +31,7 @@ trait Validators {
   import scala.language.implicitConversions
 
   class Validatable(in: Elem) {
-    def >>(attr: Validate): Elem = attr(in)
+    def >>(attr: Validator): Elem = attr(in)
   }
 
   implicit def elemToValidatable(e: Elem): Validatable = {
@@ -41,7 +41,7 @@ trait Validators {
   case class ValidateRequired(
       override val value: () => String,
       override val errorMessage: Option[String] = None,
-      isEnabled: () => Boolean = () => true)(override implicit val ctx: ValidationContext) extends Validate {
+      isEnabled: () => Boolean = () => true)(override implicit val ctx: ValidationContext) extends Validator {
 
     override def validate() = !isEnabled() || (value() != null && value().trim() != "")
 
@@ -60,7 +60,7 @@ trait Validators {
 
   case class ValidateEmail(
       override val value: () => String,
-      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validate {
+      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validator {
 
     override def validate() = {
       val v = if (value() == null) "" else value().trim()
@@ -81,7 +81,7 @@ trait Validators {
       min: Option[Int],
       max: Option[Int],
       override val value: () => String,
-      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validate {
+      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validator {
 
     override def validate() = {
       import net.liftweb.util.Helpers.tryo
@@ -124,7 +124,7 @@ trait Validators {
   case class ValidateEquals(override val value: () => String,
       val expected: () => String,
       selector: String,
-      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validate {
+      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validator {
 
     override def validate() = value() == expected()
 
@@ -140,7 +140,7 @@ trait Validators {
 
   case class ValidateRemote(
       override val value: () => String,
-      func: String => (Boolean, Option[String]))(override implicit val ctx: ValidationContext) extends Validate {
+      func: String => (Boolean, Option[String]))(override implicit val ctx: ValidationContext) extends Validator {
 
     override def validate() = func(value())._1
 
@@ -178,7 +178,7 @@ trait Validators {
       min: Option[Int],
       max: Option[Int],
       override val value: () => String,
-      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validate with Loggable {
+      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validator with Loggable {
 
     override def validate(): Boolean = {
       Option(value()) map (s => {

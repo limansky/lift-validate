@@ -18,7 +18,7 @@ package net.liftmodules.validate
 import net.liftweb.http.S
 
 trait ErrorNotice {
-  self: Validate =>
+  self: Validator =>
 
   override def validate(): Boolean = {
     val r = self.validate

@@ -15,82 +15,26 @@
  */
 package net.liftmodules.validate
 
-import scala.xml.Elem
-import net.liftweb.http.js.JsCmds._
-import net.liftweb.http.js.JE._
-import net.liftweb.http.js.jquery.JqJE._
-import net.liftweb.http.S
-import net.liftweb.json.JObject
-import net.liftweb.json.JsonDSL._
-import net.liftweb.json.JsonAST._
+import net.liftweb.http.Factory
+import net.liftweb.http.ResourceServer
 
-/**
- * Base Validate
- *
- * Validates generates JavaScript code for different checks.
- */
-abstract class Validate(implicit val ctx: ValidationContext) {
-  /**
-   * Value to be checked
-   */
-  val value: () => String
+object Validate extends Factory {
+
+  val decorations = new FactoryMaker[Option[Decorations]](None) {}
 
   /**
-   * Field associated with this Validate name.
+   * Initialize validate module.
+   *
+   * You should call it from your Boot class.
    */
-  protected var fieldName = ""
-
-  /**
-   * JavaScript rule to be checked. See http://jqueryvalidation.org/rules
-   */
-  def jsRule: JObject = messages map (msg =>
-    check merge (("messages" -> msg): JObject)) getOrElse check
-
-  /**
-   * Message js rule part.
-   */
-  def messages: Option[JObject]
-
-  /**
-   * Check js rule part
-   */
-  def check: JObject
-
-  val errorMessage: Option[String]
-
-  /**
-   * Server side validation.
-   */
-  def validate: Boolean
-
-  def apply(in: Elem) = {
-    val field = in.attributes.get("name").map(_.text)
-
-    field.map(n => {
-      fieldName = n
-      val elem = Jq("[name='" + n + "']")
-      val js = elem ~> JsFunc("rules", "add", jsRule)
-      if (!ctx.hasRules) {
-        val hl = ctx.highlight map (h => JsObj("highlight" -> h))
-        val ss = ctx.success map (s => JsObj("success" -> s))
-        val opts = List(hl, ss).flatten.reduceLeft(_ +* _)
-        S.appendJs(elem ~> JsFunc("closest", "form") ~> JsFunc("validate", opts))
-      }
-      S.appendJs(js)
-      ctx.addValidate(this)
-    })
-    in
-  }
-}
-
-object Validate {
-
   def init() = {
-    import net.liftweb.http.ResourceServer
-
     ResourceServer.allow({
       case "jquery.validate.js" :: Nil => true
       case "jquery.validate.min.js" :: Nil => true
     })
+  }
+
+  def init(decorations: Option[Decorations]): Unit = {
+    this.decorations.default.set(decorations)
   }
 }

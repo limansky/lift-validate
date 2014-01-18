@@ -16,12 +16,9 @@
 package net.liftmodules.validate
 
 import net.liftweb.http.js.JsExp
-import net.liftweb.http.js.JsCmds._
-import net.liftweb.http.js.JE._
-import net.liftweb.http.js.jquery.JqJE._
 
 /**
- * Validate context saves information about current validation.
+ * Validation context store information about current validation.
  *
  * The main purpose of this class is to use it for server side validation.
  * But you always must have an implicit instance of context. If you don't need
@@ -47,17 +44,16 @@ import net.liftweb.http.js.jquery.JqJE._
  * }}}
  */
 abstract class ValidationContext {
-  def addValidate(validate: Validate): Unit
+  def addValidate(validate: Validator): Unit
   def validate(): Boolean
   def hasRules(): Boolean
-  val highlight: Option[JsExp] = None
-  val success: Option[JsExp] = None
+  val decorations: Option[Decorations] = Validate.decorations.vend
 }
 
 class PageValidationContext extends ValidationContext {
-  var rules = List.empty[Validate]
+  var rules = List.empty[Validator]
 
-  override def addValidate(validate: Validate): Unit = rules = validate :: rules
+  override def addValidate(validate: Validator): Unit = rules = validate :: rules
 
   override def validate: Boolean = rules.map(_.validate).forall(validated => validated)
 
@@ -65,33 +61,5 @@ class PageValidationContext extends ValidationContext {
 }
 
 object ValidationContext {
-  def apply() = new PageValidationContext with Bs3Decorations
-}
-
-trait Bs3Decorations { self: ValidationContext =>
-  override val highlight = Some(AnonFunc("label",
-    Jq(JsVar("label")) ~> JsFunc("closest", ".form-group")
-      ~> JsFunc("removeClass", "has-success")
-      ~> JsFunc("addClass", "has-error")
-  ))
-
-  override val success = Some(AnonFunc("label",
-    Jq(JsVar("label")) ~> JsFunc("closest", ".form-group")
-      ~> JsFunc("removeClass", "has-error")
-      ~> JsFunc("addClass", "has-success")
-  ))
-}
-
-trait Bs2Decorations { self: ValidationContext =>
-  override val highlight = Some(AnonFunc("label",
-    Jq(JsVar("label")) ~> JsFunc("closest", ".control-group")
-      ~> JsFunc("removeClass", "success")
-      ~> JsFunc("addClass", "error")
-  ))
-
-  override val success = Some(AnonFunc("label",
-    Jq(JsVar("label")) ~> JsFunc("closest", ".control-group")
-      ~> JsFunc("removeClass", "error")
-      ~> JsFunc("addClass", "success")
-  ))
+  def apply() = new PageValidationContext
 }

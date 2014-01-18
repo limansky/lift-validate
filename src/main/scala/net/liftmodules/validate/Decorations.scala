@@ -1,0 +1,54 @@
+/*
+ * Copyright 2014 E-Terra Software
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package net.liftmodules.validate
+
+import net.liftweb.http.js.JsExp
+import net.liftweb.http.js.JsCmds._
+import net.liftweb.http.js.JE._
+import net.liftweb.http.js.jquery.JqJE._
+
+abstract class Decorations {
+  val highlight: JsExp
+  val success: JsExp
+}
+
+case class Bs3Decorations() extends Decorations {
+  override val highlight = AnonFunc("label",
+    Jq(JsVar("label")) ~> JsFunc("closest", ".form-group")
+      ~> JsFunc("removeClass", "has-success")
+      ~> JsFunc("addClass", "has-error")
+  )
+
+  override val success = AnonFunc("label",
+    Jq(JsVar("label")) ~> JsFunc("closest", ".form-group")
+      ~> JsFunc("removeClass", "has-error")
+      ~> JsFunc("addClass", "has-success")
+  )
+}
+
+case class Bs2Decorations() extends Decorations {
+  override val highlight = AnonFunc("label",
+    Jq(JsVar("label")) ~> JsFunc("closest", ".control-group")
+      ~> JsFunc("removeClass", "success")
+      ~> JsFunc("addClass", "error")
+  )
+
+  override val success = AnonFunc("label",
+    Jq(JsVar("label")) ~> JsFunc("closest", ".control-group")
+      ~> JsFunc("removeClass", "error")
+      ~> JsFunc("addClass", "success")
+  )
+}
