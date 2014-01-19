@@ -86,7 +86,7 @@ trait Validators {
     override def validate() = {
       import net.liftweb.util.Helpers.tryo
       val v = if (value() == null) "" else value().trim()
-      !v.isEmpty || (tryo(v.toInt).map(ival =>
+      v.isEmpty || (tryo(v.toInt).map(ival =>
         min.map(_ <= ival).getOrElse(true) && max.map(_ >= ival).getOrElse(true)
       ) getOrElse false)
     }

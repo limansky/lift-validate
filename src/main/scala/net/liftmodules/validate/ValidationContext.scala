@@ -47,7 +47,7 @@ abstract class ValidationContext {
   def addValidate(validate: Validator): Unit
   def validate(): Boolean
   def hasRules(): Boolean
-  val decorations: Option[Decorations] = Validate.decorations.vend
+  val options: Options = Validate.options.vend
 }
 
 class PageValidationContext extends ValidationContext {

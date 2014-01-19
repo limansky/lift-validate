@@ -20,7 +20,7 @@ import net.liftweb.http.ResourceServer
 
 object Validate extends Factory {
 
-  val decorations = new FactoryMaker[Option[Decorations]](None) {}
+  val options = new FactoryMaker[Options](Options()) {}
 
   /**
    * Initialize validate module.
@@ -34,7 +34,7 @@ object Validate extends Factory {
     })
   }
 
-  def init(decorations: Option[Decorations]): Unit = {
-    this.decorations.default.set(decorations)
+  def init(options: Options): Unit = {
+    this.options.default.set(options)
   }
 }

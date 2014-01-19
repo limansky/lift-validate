@@ -20,35 +20,40 @@ import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JE._
 import net.liftweb.http.js.jquery.JqJE._
 
-abstract class Decorations {
-  val highlight: JsExp
-  val success: JsExp
+case class Options(val options: Map[String, JsExp] = Map.empty)
+
+object Bs3Options {
+  def apply(): Options = Options(Map(
+    "highlight" ->
+      AnonFunc("label",
+        Jq(JsVar("label")) ~> JsFunc("closest", ".form-group")
+          ~> JsFunc("removeClass", "has-success")
+          ~> JsFunc("addClass", "has-error")
+      ),
+    "success" ->
+      AnonFunc("label",
+        Jq(JsVar("label")) ~> JsFunc("closest", ".control-group")
+          ~> JsFunc("removeClass", "success")
+          ~> JsFunc("addClass", "error")
+      )
+  )
+  )
 }
 
-case class Bs3Decorations() extends Decorations {
-  override val highlight = AnonFunc("label",
-    Jq(JsVar("label")) ~> JsFunc("closest", ".form-group")
-      ~> JsFunc("removeClass", "has-success")
-      ~> JsFunc("addClass", "has-error")
+object Bs2Options {
+  def apply(): Options = Options(Map(
+    "highlight" ->
+      AnonFunc("label",
+        Jq(JsVar("label")) ~> JsFunc("closest", ".control-group")
+          ~> JsFunc("removeClass", "success")
+          ~> JsFunc("addClass", "error")
+      ),
+    "success" ->
+      AnonFunc("label",
+        Jq(JsVar("label")) ~> JsFunc("closest", ".control-group")
+          ~> JsFunc("removeClass", "error")
+          ~> JsFunc("addClass", "success")
+      )
   )
-
-  override val success = AnonFunc("label",
-    Jq(JsVar("label")) ~> JsFunc("closest", ".form-group")
-      ~> JsFunc("removeClass", "has-error")
-      ~> JsFunc("addClass", "has-success")
-  )
-}
-
-case class Bs2Decorations() extends Decorations {
-  override val highlight = AnonFunc("label",
-    Jq(JsVar("label")) ~> JsFunc("closest", ".control-group")
-      ~> JsFunc("removeClass", "success")
-      ~> JsFunc("addClass", "error")
-  )
-
-  override val success = AnonFunc("label",
-    Jq(JsVar("label")) ~> JsFunc("closest", ".control-group")
-      ~> JsFunc("removeClass", "error")
-      ~> JsFunc("addClass", "success")
   )
 }
