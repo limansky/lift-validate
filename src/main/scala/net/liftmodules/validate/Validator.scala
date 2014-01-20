@@ -42,7 +42,9 @@ abstract class Validator(implicit val ctx: ValidationContext) {
   protected var fieldName = ""
 
   /**
-   * JavaScript rule to be checked. See http://jqueryvalidation.org/rules
+   * JavaScript rule to be checked.
+   *
+   * @see <a href="http://jqueryvalidation.org/rules">http://jqueryvalidation.org/rules</a>
    */
   def jsRule: JObject = messages map (msg =>
     check merge (("messages" -> msg): JObject)) getOrElse check
@@ -57,6 +59,11 @@ abstract class Validator(implicit val ctx: ValidationContext) {
    */
   def check: JObject
 
+  /**
+   * Message to be shown if validation failed.
+   *
+   * None if default message should be shown.
+   */
   val errorMessage: Option[String]
 
   /**

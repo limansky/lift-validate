@@ -24,10 +24,7 @@ import net.liftweb.json.{ JObject, JField, JNull }
 import net.liftweb.common.Full
 import net.liftweb.common.Loggable
 
-object Validators extends Validators
-
-trait Validators {
-
+object Validators {
   import scala.language.implicitConversions
 
   class Validatable(in: Elem) {
@@ -38,10 +35,17 @@ trait Validators {
     new Validatable(e)
   }
 
+  /**
+   * Validates if some value is entered
+   *
+   * @param value value to be checked
+   * @param errorMessage message to be shown if validation fails
+   * @param isEnabled allows to disable validator on some condition.
+   */
   case class ValidateRequired(
       override val value: () => String,
       override val errorMessage: Option[String] = None,
-      isEnabled: () => Boolean = () => true)(override implicit val ctx: ValidationContext) extends Validator {
+      isEnabled: () => Boolean = () => true)(implicit ctx: ValidationContext) extends Validator {
 
     override def validate(): Boolean = !isEnabled() || Option(value()).exists(_.trim.nonEmpty)
 
@@ -58,9 +62,12 @@ trait Validators {
       ValidateRequired(value, Some(errorMessage))
   }
 
+  /**
+   * Validates if entered value is email.
+   */
   case class ValidateEmail(
       override val value: () => String,
-      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validator {
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
 
     override def validate(): Boolean = {
       val v = Option(value()) map (_.trim) getOrElse ""
@@ -77,11 +84,19 @@ trait Validators {
       ValidateEmail(value, Some(errorMessage))
   }
 
+  /**
+   * Validates if the value is a number.
+   *
+   * If min, max or both are defined, checks if the value is belongs to the defined bounds.
+   *
+   * @param min minimal allowed value
+   * @param max maximal allowed value
+   */
   case class ValidateInt(
       min: Option[Int],
       max: Option[Int],
       override val value: () => String,
-      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validator {
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
 
     override def validate(): Boolean = {
       import net.liftweb.util.Helpers.tryo
@@ -121,10 +136,16 @@ trait Validators {
       ValidateInt(None, None, value)
   }
 
+  /**
+   * Validates if one field equals to another one.
+   *
+   * @param expected expected value. This value will be verified on server side.
+   * @param selector CSS selector to the input to compare this control value with.
+   */
   case class ValidateEquals(override val value: () => String,
       val expected: () => String,
       selector: String,
-      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validator {
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
 
     override def validate(): Boolean = value() == expected()
 
@@ -138,9 +159,15 @@ trait Validators {
       ValidateEquals(value, expected, selector, Some(errorMessage))
   }
 
+  /**
+   * Validates value on server side via AJAX call.
+   *
+   * @param func function to check value. The first element of returned tuple shows if the value is
+   * validated. The second one is optional message to be shown if value is not valid.
+   */
   case class ValidateRemote(
       override val value: () => String,
-      func: String => (Boolean, Option[String]))(override implicit val ctx: ValidationContext) extends Validator {
+      func: String => (Boolean, Option[String]))(implicit ctx: ValidationContext) extends Validator {
 
     override def validate(): Boolean = func(value())._1
 
@@ -152,11 +179,10 @@ trait Validators {
           S.request match {
             case Full(req) =>
               val obj: JValue = req.param(fieldName).map(v => {
-                val (r, m) = func(v)
-                if (r) {
-                  JBool(true)
-                } else {
-                  m map (s => JString(s)) getOrElse JBool(false)
+                func(v) match {
+                  case (true, _) => JBool(true)
+                  case (false, Some(s)) => JString(s)
+                  case (false, None) => JBool(false)
                 }
               }).getOrElse(JNull)
               JsonResponse(obj)
@@ -174,11 +200,19 @@ trait Validators {
     override def messages: Option[JObject] = None
   }
 
+  /**
+   * Validates value length.
+   *
+   * You should define at least one of min and max values.
+   *
+   * @param min minimal allowed length
+   * @param max maximal allowed length
+   */
   case class ValidateLength(
       min: Option[Int],
       max: Option[Int],
       override val value: () => String,
-      override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validator with Loggable {
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator with Loggable {
 
     override def validate(): Boolean = {
       Option(value()) map (s => {
