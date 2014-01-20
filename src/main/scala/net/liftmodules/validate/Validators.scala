@@ -43,11 +43,11 @@ trait Validators {
       override val errorMessage: Option[String] = None,
       isEnabled: () => Boolean = () => true)(override implicit val ctx: ValidationContext) extends Validator {
 
-    override def validate() = !isEnabled() || (value() != null && value().trim() != "")
+    override def validate(): Boolean = !isEnabled() || Option(value()).exists(_.trim.nonEmpty)
 
     override def check: JObject = if (isEnabled()) "required" -> true else JObject(Nil)
 
-    override def messages: Option[JObject] = errorMessage map (m => "required" -> m)
+    override def messages: Option[JObject] = errorMessage map ("required" -> _)
   }
 
   object ValidateRequired {
@@ -62,14 +62,14 @@ trait Validators {
       override val value: () => String,
       override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validator {
 
-    override def validate() = {
-      val v = if (value() == null) "" else value().trim()
-      v == "" || v.matches("[^@]+@[^@.]+\\.[^@]+")
+    override def validate(): Boolean = {
+      val v = Option(value()) map (_.trim) getOrElse ""
+      v.isEmpty() || v.matches("[^@]+@[^@.]+\\.[^@]+")
     }
 
     override def check: JObject = "email" -> true
 
-    override def messages: Option[JObject] = errorMessage map (m => "email" -> m)
+    override def messages: Option[JObject] = errorMessage map ("email" -> _)
   }
 
   object ValidateEmail {
@@ -83,9 +83,9 @@ trait Validators {
       override val value: () => String,
       override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validator {
 
-    override def validate() = {
+    override def validate(): Boolean = {
       import net.liftweb.util.Helpers.tryo
-      val v = if (value() == null) "" else value().trim()
+      val v = Option(value()) map (_.trim) getOrElse ""
       v.isEmpty || (tryo(v.toInt).map(ival =>
         min.map(_ <= ival).getOrElse(true) && max.map(_ >= ival).getOrElse(true)
       ) getOrElse false)
@@ -126,7 +126,7 @@ trait Validators {
       selector: String,
       override val errorMessage: Option[String] = None)(override implicit val ctx: ValidationContext) extends Validator {
 
-    override def validate() = value() == expected()
+    override def validate(): Boolean = value() == expected()
 
     override def check: JObject = "equalTo" -> selector
 
@@ -142,7 +142,7 @@ trait Validators {
       override val value: () => String,
       func: String => (Boolean, Option[String]))(override implicit val ctx: ValidationContext) extends Validator {
 
-    override def validate() = func(value())._1
+    override def validate(): Boolean = func(value())._1
 
     override def check: JObject = {
       import S.NFuncHolder

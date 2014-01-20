@@ -27,7 +27,7 @@ object Validate extends Factory {
    *
    * You should call it from your Boot class.
    */
-  def init() = {
+  def init(): Unit = {
     ResourceServer.allow({
       case "jquery.validate.js" :: Nil => true
       case "jquery.validate.min.js" :: Nil => true

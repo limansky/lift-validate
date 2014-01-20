@@ -61,5 +61,5 @@ class PageValidationContext extends ValidationContext {
 }
 
 object ValidationContext {
-  def apply() = new PageValidationContext
+  def apply(): ValidationContext = new PageValidationContext
 }
