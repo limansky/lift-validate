@@ -16,6 +16,7 @@
 package net.liftmodules.validate
 
 import net.liftweb.http.RequestVar
+
 package object global {
 
   implicit val dummyContext = new ValidationContext {

@@ -17,10 +17,11 @@ package net.liftmodules.validate
 
 import net.liftweb.http.Factory
 import net.liftweb.http.ResourceServer
+import options._
 
 object Validate extends Factory {
 
-  val options = new FactoryMaker[Options](Options()) {}
+  val options = new FactoryMaker[Options](Options.empty) {}
 
   /**
    * Initialize validate module.

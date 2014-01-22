@@ -16,6 +16,7 @@
 package net.liftmodules.validate
 
 import net.liftweb.http.js.JsExp
+import options._
 
 /**
  * Validation context store information about current validation.
