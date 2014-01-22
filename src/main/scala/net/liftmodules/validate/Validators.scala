@@ -44,8 +44,8 @@ object Validators {
    */
   case class ValidateRequired(
       override val value: () => String,
-      override val errorMessage: Option[String] = None,
-      isEnabled: () => Boolean = () => true)(implicit ctx: ValidationContext) extends Validator {
+      isEnabled: () => Boolean = () => true,
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
 
     override def validate(): Boolean = !isEnabled() || Option(value()).exists(_.trim.nonEmpty)
 
@@ -55,11 +55,11 @@ object Validators {
   }
 
   object ValidateRequired {
-    def apply(value: () => String, errorMessage: String, isEnabled: () => Boolean)(implicit ctx: ValidationContext): ValidateRequired =
-      ValidateRequired(value, Some(errorMessage), isEnabled)
+    def apply(value: () => String, isEnabled: () => Boolean, errorMessage: String)(implicit ctx: ValidationContext): ValidateRequired =
+      ValidateRequired(value, isEnabled, Some(errorMessage))
 
     def apply(value: () => String, errorMessage: String)(implicit ctx: ValidationContext): ValidateRequired =
-      ValidateRequired(value, Some(errorMessage))
+      ValidateRequired(value, () => true, Some(errorMessage))
   }
 
   /**
@@ -71,7 +71,7 @@ object Validators {
 
     override def validate(): Boolean = {
       val v = Option(value()) map (_.trim) getOrElse ""
-      v.isEmpty() || v.matches("[^@]+@[^@.]+\\.[^@]+")
+      v.isEmpty() || v.matches("[^@ ]+@[^@.,; '\"]+\\.[^@,; '\"]+")
     }
 
     override def check: JObject = "email" -> true
