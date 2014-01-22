@@ -83,7 +83,7 @@ abstract class Validator(implicit val ctx: ValidationContext) {
         S.appendJs(elem ~> JsFunc("closest", "form") ~> JsFunc("validate", opts))
       }
       S.appendJs(js)
-      ctx.addValidate(Validator.this)
+      ctx.addValidator(Validator.this)
     })
     in
   }

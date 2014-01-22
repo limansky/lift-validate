@@ -21,6 +21,8 @@ import options._
 /**
  * Validation context store information about current validation.
  *
+ * Usually you don't need to create custom contexts.
+ *
  * The main purpose of this class is to use it for server side validation.
  * But you always must have an implicit instance of context. If you don't need
  * to perform server side validation you can just `import net.liftmodules.validate.global._`
@@ -45,20 +47,50 @@ import options._
  * }}}
  */
 abstract class ValidationContext {
-  def addValidate(validate: Validator): Unit
+  /**
+   * Add validator to this context
+   */
+  def addValidator(validator: Validator): Unit
+
+  /**
+   * Perform server side validation
+   *
+   * Usually this is called from form submit handler
+   */
   def validate(): Boolean
+
+  /**
+   * Perform server side validation with error handler
+   *
+   * For example you can pass S.error to thus function.
+   *
+   * @param handler function to handle error message returned by validator.
+   */
+  def validate(handler: String => Unit): Boolean = validate()
+
+  /**
+   * Indicates if at least one validator was added via addValidator
+   */
   def hasRules(): Boolean
   val options: Options = Validate.options.vend
 }
 
 class PageValidationContext extends ValidationContext {
-  var rules = List.empty[Validator]
+  var validators = List.empty[Validator]
 
-  override def addValidate(validate: Validator): Unit = rules = validate :: rules
+  override def addValidator(validator: Validator): Unit = validators = validator :: validators
 
-  override def validate: Boolean = rules.map(_.validate).forall(validated => validated)
+  override def validate: Boolean = validators.map(_.validate).forall(validated => validated)
 
-  override def hasRules: Boolean = rules.nonEmpty
+  override def validate(handler: String => Unit): Boolean = {
+    validators.foldLeft(true)((a, r) => {
+      val v = r.validate
+      if (!v) r.errorMessage.foreach(handler)
+      a & v
+    })
+  }
+
+  override def hasRules: Boolean = validators.nonEmpty
 }
 
 object ValidationContext {
