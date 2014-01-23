@@ -84,6 +84,20 @@ object Validators {
       ValidateEmail(value, Some(errorMessage))
   }
 
+  case class ValidateUrl(
+      override val value: () => String,
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
+
+    override def validate(): Boolean = {
+      val v = Option(value()) map (_.trim) getOrElse ""
+      v.isEmpty() || v.matches("(http|ftp|https)://([^. /]+\\.)*[^. /]+/?")
+    }
+
+    override def check: JObject = "url" -> true
+
+    override def messages: Option[JObject] = errorMessage map ("url" -> _)
+  }
+
   /**
    * Validates if the value is a number.
    *
