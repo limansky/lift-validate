@@ -15,19 +15,24 @@
  */
 package net.liftmodules.validate
 
-import net.liftweb.http.RequestVar
+import org.scalatest.matchers.ShouldMatchers
+import org.scalatest.FlatSpec
+import Validators._
 
-package object global {
+trait ContextTest extends ShouldMatchers { this: FlatSpec =>
 
-  implicit val dummyContext = new ValidationContext {
+  def anyContext(context: => ValidationContext) {
 
-    private object validators extends RequestVar[List[Validator]](List.empty)
+    it should "hasValidators if validators were added" in {
+      implicit val ctx = context
 
-    override def addValidator(validator: Validator): Unit = validators.update(validator :: _)
+      ctx.hasValidators should be(false)
 
-    override def validate(): Boolean =
-      throw new UnsupportedOperationException("Validate called on dummy context!")
+      ctx.addValidator(ValidateRequired(() => "dummy"))
+      ctx.hasValidators should be(true)
 
-    override def hasValidators(): Boolean = validators.nonEmpty
+      ctx.addValidator(ValidateEmail(() => "tst"))
+      ctx.hasValidators should be(true)
+    }
   }
 }

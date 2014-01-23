@@ -15,19 +15,18 @@
  */
 package net.liftmodules.validate
 
-import net.liftweb.http.RequestVar
+import org.scalatest.FlatSpec
+import net.liftweb.http.{ LiftSession, S }
+import net.liftweb.util.Helpers._
+import net.liftweb.common.Empty
+import net.liftweb.common.Full
 
-package object global {
+class GlobalContextTest extends FlatSpec with ContextTest {
+  protected def session = new LiftSession("", randomString(20), Empty)
 
-  implicit val dummyContext = new ValidationContext {
-
-    private object validators extends RequestVar[List[Validator]](List.empty)
-
-    override def addValidator(validator: Validator): Unit = validators.update(validator :: _)
-
-    override def validate(): Boolean =
-      throw new UnsupportedOperationException("Validate called on dummy context!")
-
-    override def hasValidators(): Boolean = validators.nonEmpty
+  override def withFixture(test: NoArgTest) {
+    S.initIfUninitted(session) { super.withFixture(test) }
   }
+
+  "Global context" should behave like anyContext(global.dummyContext)
 }

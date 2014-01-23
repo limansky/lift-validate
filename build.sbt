@@ -28,7 +28,8 @@ libraryDependencies <++= liftVersion { v => Seq(
 )}
 
 libraryDependencies ++= Seq(
-  "org.scalatest"   %% "scalatest"      % "1.9.2"   % "test"
+  "org.scalatest"   %% "scalatest"      % "1.9.2"   % "test",
+  "org.mockito"     %  "mockito-core"   % "1.9.5"   % "test"
 )
 
 scalariformSettings

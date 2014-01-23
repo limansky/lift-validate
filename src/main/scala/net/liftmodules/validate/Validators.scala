@@ -99,9 +99,9 @@ object Validators {
       override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
 
     override def validate(): Boolean = {
-      import net.liftweb.util.Helpers.tryo
+      import net.liftweb.util.Helpers.asInt
       val v = Option(value()) map (_.trim) getOrElse ""
-      v.isEmpty || (tryo(v.toInt).map(ival =>
+      v.isEmpty || (asInt(v).map(ival =>
         min.map(_ <= ival).getOrElse(true) && max.map(_ >= ival).getOrElse(true)
       ) getOrElse false)
     }

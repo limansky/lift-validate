@@ -78,12 +78,12 @@ abstract class Validator(implicit val ctx: ValidationContext) {
       fieldName = n
       val elem = Jq("[name='" + n + "']")
       val js = elem ~> JsFunc("rules", "add", jsRule)
-      if (!ctx.hasRules) {
+      if (!ctx.hasValidators) {
         val opts = ctx.options.foldLeft(JsObj())((r, v) => r +* JsObj(v))
         S.appendJs(elem ~> JsFunc("closest", "form") ~> JsFunc("validate", opts))
       }
       S.appendJs(js)
-      ctx.addValidator(Validator.this)
+      ctx.addValidator(this)
     })
     in
   }

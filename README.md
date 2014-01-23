@@ -12,7 +12,7 @@
 
 ## Usage
 
-  In the simpliest case the only thing you need to do is to add validators to you form snippet. For example you have form with name, email, password and password confirmation. The name must be longer than 6 characters, email is required and shall be correct and the password and confirmation shall match.
+  In the simplest case the only thing you need to do is to add validators to you form snippet. For example you have form with name, email, password and password confirmation. The name must be longer than 6 characters, email is required and shall be correct and the password and confirmation shall match.
 
 ```
 import net.liftmodules.validate.Validators._
@@ -69,4 +69,16 @@ class MySnippet {
   }
 ```
 
-## Customization
+### Customizing messages
+
+  Each validator has additional parameter to pass a string which will be shown if validation is failed.
+
+### Setting jQuery plugin options
+
+  If you want to pass some options to jQuery validation plugin you can do it by setting Validate.options parameter in your Boot class.  Validate module provides two predefined set of options, for [Twitter Bootstrap](http://getbootstrap.com) 2 and 3. For example, for Bootstrap 3:
+
+```
+  import net.liftmodules.validate.options._
+
+  Validate.options.default.set(Bs3Options())
+```

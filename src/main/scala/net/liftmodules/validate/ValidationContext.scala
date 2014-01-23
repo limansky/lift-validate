@@ -71,7 +71,7 @@ abstract class ValidationContext {
   /**
    * Indicates if at least one validator was added via addValidator
    */
-  def hasRules(): Boolean
+  def hasValidators(): Boolean
   val options: Options = Validate.options.vend
 }
 
@@ -90,7 +90,7 @@ class PageValidationContext extends ValidationContext {
     })
   }
 
-  override def hasRules: Boolean = validators.nonEmpty
+  override def hasValidators: Boolean = validators.nonEmpty
 }
 
 object ValidationContext {

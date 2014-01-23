@@ -15,19 +15,26 @@
  */
 package net.liftmodules.validate
 
-import net.liftweb.http.RequestVar
+import org.scalatest.FlatSpec
+import org.scalatest.matchers.ShouldMatchers
+import net.liftmodules.validate.Validators._
+import org.scalatest.mock.MockitoSugar
+import org.mockito.Mockito._
 
-package object global {
+class ValidationContextTest extends FlatSpec with ContextTest with ShouldMatchers with MockitoSugar {
 
-  implicit val dummyContext = new ValidationContext {
+  "ValidationContext" should behave like anyContext(ValidationContext())
 
-    private object validators extends RequestVar[List[Validator]](List.empty)
+  it should "call validators on validating" in {
+    val v1 = mock[Validator]
+    val v2 = mock[Validator]
 
-    override def addValidator(validator: Validator): Unit = validators.update(validator :: _)
+    val ctx = ValidationContext()
+    ctx.addValidator(v1)
+    ctx.addValidator(v2)
+    ctx.validate
 
-    override def validate(): Boolean =
-      throw new UnsupportedOperationException("Validate called on dummy context!")
-
-    override def hasValidators(): Boolean = validators.nonEmpty
+    verify(v1).validate
+    verify(v2).validate
   }
 }
