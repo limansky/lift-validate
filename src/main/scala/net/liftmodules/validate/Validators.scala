@@ -23,6 +23,7 @@ import net.liftweb.json.JsonDSL._
 import net.liftweb.json.{ JObject, JField, JNull }
 import net.liftweb.common.Full
 import net.liftweb.common.Loggable
+import java.net.URI
 
 object Validators {
   import scala.language.implicitConversions
@@ -84,18 +85,26 @@ object Validators {
       ValidateEmail(value, Some(errorMessage))
   }
 
+  /**
+   * Validates if entered value is URL
+   */
   case class ValidateUrl(
       override val value: () => String,
       override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
 
     override def validate(): Boolean = {
-      val v = Option(value()) map (_.trim) getOrElse ""
-      v.isEmpty() || v.matches("(http|ftp|https)://([^. /]+\\.)*[^. /]+/?")
+      import net.liftweb.util.Helpers.tryo
+      Option(value()).flatMap(s => tryo(new URI(s.trim))).isDefined
     }
 
     override def check: JObject = "url" -> true
 
     override def messages: Option[JObject] = errorMessage map ("url" -> _)
+  }
+
+  object ValidateUrl {
+    def apply(value: () => String, errorMessage: String)(implicit ctx: ValidationContext): ValidateUrl =
+      ValidateUrl(value, Some(errorMessage))
   }
 
   /**

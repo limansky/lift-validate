@@ -68,9 +68,9 @@ class ServerSideTest extends FlatSpec with ShouldMatchers {
   }
 
   it should "not pass invalid urls" in {
-    ValidateUrl(() => "http://www.yan dex.ru/").validate() should be(false)
-    ValidateUrl(() => "http://www.yandex.ru/ something").validate() should be(false)
-    ValidateUrl(() => "http://www.yan@@@dex.ru/").validate() should be(false)
+    ValidateUrl(() => "file://www.yan dex.ru/").validate() should be(false)
+    ValidateUrl(() => "http://www.yan##dex.ru/something").validate() should be(false)
+    ValidateUrl(() => "http://www.\\.com/").validate() should be(false)
   }
 
   "ValidateInt" should "validate if value is number" in {
