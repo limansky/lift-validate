@@ -30,8 +30,7 @@ object Validate extends Factory {
    */
   def init(): Unit = {
     ResourceServer.allow({
-      case "jquery.validate.js" :: Nil => true
-      case "jquery.validate.min.js" :: Nil => true
+      case "validate" :: _ => true
     })
   }
 

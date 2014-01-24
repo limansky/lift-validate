@@ -24,6 +24,7 @@ import net.liftweb.json.{ JObject, JField, JNull }
 import net.liftweb.common.Full
 import net.liftweb.common.Loggable
 import java.net.URI
+import scala.util.matching.Regex
 
 object Validators {
   import scala.language.implicitConversions
@@ -116,16 +117,16 @@ object Validators {
    * @param min minimal allowed value
    * @param max maximal allowed value
    */
-  case class ValidateInt(
-      min: Option[Int],
-      max: Option[Int],
+  case class ValidateNumber(
+      min: Option[Double],
+      max: Option[Double],
       override val value: () => String,
       override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
 
     override def validate(): Boolean = {
-      import net.liftweb.util.Helpers.asInt
+      import net.liftweb.util.Helpers.asDouble
       val v = Option(value()) map (_.trim) getOrElse ""
-      v.isEmpty || (asInt(v).map(ival =>
+      v.isEmpty || (asDouble(v).map(ival =>
         min.map(_ <= ival).getOrElse(true) && max.map(_ >= ival).getOrElse(true)
       ) getOrElse false)
     }
@@ -146,6 +147,62 @@ object Validators {
         case (None, Some(_)) => "max" -> m
         case (None, None) => "number" -> m
       }
+    })
+  }
+
+  object ValidateNumber {
+    def apply(min: Option[Double], max: Option[Double], value: () => String, errorMessage: String)(implicit ctx: ValidationContext): ValidateNumber =
+      ValidateNumber(min, max, value, Some(errorMessage))
+
+    def apply(value: () => String, errorMessage: String)(implicit ctx: ValidationContext): ValidateNumber =
+      ValidateNumber(None, None, value, Some(errorMessage))
+
+    def apply(value: () => String)(implicit ctx: ValidationContext): ValidateNumber =
+      ValidateNumber(None, None, value)
+  }
+
+  /**
+   * Validates if the value is an integer number.
+   *
+   * If min, max or both are defined, checks if the value is belongs to the defined bounds.
+   *
+   * @param min minimal allowed value
+   * @param max maximal allowed value
+   */
+  case class ValidateInt(
+      min: Option[Int],
+      max: Option[Int],
+      override val value: () => String,
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
+
+    override def validate(): Boolean = {
+      import net.liftweb.util.Helpers.asInt
+      val v = Option(value()) map (_.trim) getOrElse ""
+      v.isEmpty || (asInt(v).map(ival =>
+        min.map(_ <= ival).getOrElse(true) && max.map(_ >= ival).getOrElse(true)
+      ) getOrElse false)
+    }
+
+    override def check: JObject = {
+      val limit: JObject = (min, max) match {
+        case (Some(mi), Some(ma)) => "range" -> List(mi, ma)
+        case (Some(mi), None) => "min" -> mi
+        case (None, Some(ma)) => "max" -> ma
+        case _ => Nil
+      }
+
+      (("integer" -> true): JObject) merge limit
+    }
+
+    override def messages: Option[JObject] = errorMessage map (m => {
+      val limit: JObject = (min, max) match {
+        case (Some(_), Some(_)) => "range" -> m
+        case (Some(_), None) => "min" -> m
+        case (None, Some(_)) => "max" -> m
+        case (None, None) => Nil
+      }
+
+      (("integer" -> m): JObject) merge limit
     })
   }
 
@@ -280,5 +337,25 @@ object Validators {
   object ValidateLength {
     def apply(min: Option[Int], max: Option[Int], value: () => String, errorMessage: String)(implicit ctx: ValidationContext): ValidateLength =
       ValidateLength(min, max, value, Some(errorMessage))
+  }
+
+  case class ValidateRegex(
+      regex: Regex,
+      override val value: () => String,
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
+
+    override def validate() = {
+      val v = Option(value()) map (_.trim) getOrElse ""
+      v.isEmpty || (regex findFirstIn v).isDefined
+    }
+
+    override def check: JObject = "pattern" -> regex.toString
+
+    override def messages: Option[JObject] = errorMessage map ("pattern" -> _)
+  }
+
+  object ValidateRegex {
+    def apply(regex: Regex, value: () => String, errorMessage: String)(implicit ctx: ValidationContext): ValidateRegex =
+      ValidateRegex(regex, value, Some(errorMessage))
   }
 }

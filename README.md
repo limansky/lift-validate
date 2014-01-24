@@ -40,7 +40,19 @@ class MySnippet {
   To make jQuery module work you should include it in your HTML template:
 
 ```
-  <script src="/classpath/jquery.validate.js" type="text/javascript"></script>
+  <script src="/classpath/validate/jquery.validate.min.js" type="text/javascript"></script>
+```
+
+If you use ValidateInt or ValidateRegex you shall also inclide additional methods:
+
+```
+  <script src="/classpath/validate/additional-methods.min.js" type="text/javascript"></script>
+```
+
+If you want to use jQuery plugin build-in localization, you can include required file from localization folder. For example, for Russian localization:
+
+```
+  <script src="/classpath/validate/lozalization/messages_ru.js" type="text/javascript"></script>
 ```
 
 ### Server side validation

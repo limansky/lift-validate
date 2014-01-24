@@ -73,8 +73,38 @@ class ServerSideTest extends FlatSpec with ShouldMatchers {
     ValidateUrl(() => "http://www.\\.com/").validate() should be(false)
   }
 
+  "ValidateNumber" should "validate if value is number" in {
+    ValidateNumber(() => "42").validate() should be(true)
+    ValidateNumber(() => "12.38").validate() should be(true)
+    ValidateNumber(() => "abc").validate() should be(false)
+  }
+
+  it should "check value lower bound" in {
+    ValidateNumber(Some(5), None, () => "12").validate() should be(true)
+    ValidateNumber(Some(8), None, () => "8.5").validate() should be(true)
+    ValidateNumber(Some(8), None, () => "5").validate() should be(false)
+    ValidateNumber(Some(4), None, () => "5b").validate() should be(false)
+  }
+
+  it should "check value upper bound" in {
+    ValidateNumber(None, Some(7), () => "5").validate() should be(true)
+    ValidateNumber(None, Some(14.9), () => "14.9").validate() should be(true)
+    ValidateNumber(None, Some(9), () => "35.1").validate() should be(false)
+    ValidateNumber(None, Some(4), () => "abc").validate() should be(false)
+  }
+
+  it should "check value range" in {
+    ValidateNumber(Some(5), Some(10), () => "5.32").validate() should be(true)
+    ValidateNumber(Some(5), Some(10), () => "7").validate() should be(true)
+    ValidateNumber(Some(5), Some(10), () => "10").validate() should be(true)
+    ValidateNumber(Some(8), Some(25), () => "51").validate() should be(false)
+    ValidateNumber(Some(8), Some(12), () => "12.1").validate() should be(false)
+    ValidateNumber(Some(4), Some(15), () => "Vasya").validate() should be(false)
+  }
+
   "ValidateInt" should "validate if value is number" in {
     ValidateInt(() => "42").validate() should be(true)
+    ValidateInt(() => "12.38").validate() should be(false)
     ValidateInt(() => "abc").validate() should be(false)
   }
 
@@ -82,13 +112,15 @@ class ServerSideTest extends FlatSpec with ShouldMatchers {
     ValidateInt(Some(5), None, () => "12").validate() should be(true)
     ValidateInt(Some(8), None, () => "8").validate() should be(true)
     ValidateInt(Some(8), None, () => "5").validate() should be(false)
+    ValidateInt(Some(8), None, () => "8.3").validate() should be(false)
     ValidateInt(Some(4), None, () => "5b").validate() should be(false)
   }
 
   it should "check value upper bound" in {
     ValidateInt(None, Some(7), () => "5").validate() should be(true)
     ValidateInt(None, Some(15), () => "15").validate() should be(true)
-    ValidateInt(None, Some(9), () => "35").validate() should be(false)
+    ValidateInt(None, Some(15), () => "14.9").validate() should be(false)
+    ValidateInt(None, Some(9), () => "35.1").validate() should be(false)
     ValidateInt(None, Some(4), () => "abc").validate() should be(false)
   }
 
@@ -96,8 +128,9 @@ class ServerSideTest extends FlatSpec with ShouldMatchers {
     ValidateInt(Some(5), Some(10), () => "5").validate() should be(true)
     ValidateInt(Some(5), Some(10), () => "7").validate() should be(true)
     ValidateInt(Some(5), Some(10), () => "10").validate() should be(true)
+    ValidateInt(Some(5), Some(10), () => "5.5").validate() should be(false)
     ValidateInt(Some(8), Some(25), () => "51").validate() should be(false)
-    ValidateInt(Some(8), Some(12), () => "5").validate() should be(false)
+    ValidateInt(Some(8), Some(12), () => "12.1").validate() should be(false)
     ValidateInt(Some(4), Some(15), () => "Vasya").validate() should be(false)
   }
 
@@ -133,5 +166,12 @@ class ServerSideTest extends FlatSpec with ShouldMatchers {
     ValidateLength(Some(5), Some(8), () => "abcdefghj").validate() should be(false)
     ValidateLength(Some(5), Some(8), () => "abc").validate() should be(false)
     ValidateLength(Some(2), Some(4), () => "").validate() should be(false)
+  }
+
+  "ValidateRegex" should "check regex" in {
+    ValidateRegex("^0x[0-9a-fA-F]+$".r, () => "0x5EF4").validate() should be(true)
+    ValidateRegex("bug".r, () => "there no bugs here").validate() should be(true)
+    ValidateRegex("^0x[0-9a-fA-F]+$".r, () => "0x7UA4").validate() should be(false)
+    ValidateRegex("ing$".r, () => "skiing is fine").validate() should be(false)
   }
 }
