@@ -94,7 +94,8 @@ object Validators {
 
     override def validate(): Boolean = {
       import net.liftweb.util.Helpers.tryo
-      Option(value()).flatMap(s => tryo(new URI(s.trim))).isDefined
+      val v = Option(value()) map (_.trim) getOrElse ""
+      v.isEmpty() || tryo(new URI(v.trim)).isDefined
     }
 
     override def check: JObject = "url" -> true
