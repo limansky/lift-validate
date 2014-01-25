@@ -27,7 +27,8 @@ import java.net.URI
 import scala.util.matching.Regex
 
 object Validators {
-  import scala.language.implicitConversions
+  //  To allow build for Scala 2.9.x
+  //  import scala.language.implicitConversions
 
   class Validatable(in: Elem) {
     def >>(attr: Validator): Elem = attr(in)
