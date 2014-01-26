@@ -2,6 +2,18 @@
 
   Input validation module for [Lift](http://liftweb.net) web framework.  This module use [jQuery Validation](http://www.jqueryvalidation.org) plugin for client side validation.  Server side validation is available as well.
 
+  Following validators are provided:
+
+  * ValidateRequired - value is required.
+  * ValidateNumber - value is a positive or negative number. You can also define minimum and maximum values.
+  * ValidateInt - the same with ValidateNumber, but the number must be integer.
+  * ValidateEmail - value must be valid email address.
+  * ValidateUrl - value must be valid URL.
+  * ValidateEquals - value must be the same with another value.
+  * ValidateRemote - value will be checked on server using passed function.  There is a problem with this validator because of jQuery Validation plugin behavior.  If validation was failed it will send validation requests to server on each value changed event, so it can increase server load.
+  * ValidateLength - value length must satisfy defined range.
+  * ValidateRegex - value must satisfy defined regular expression.
+
 ## Installation
 
   If you use sbt add the module to libraryDependencies. For example for Lift 2.5.x it will be:
@@ -32,7 +44,7 @@ class MySnippet {
       "#email" #> (SHtml.text(email, email = _) >> ValidateRequired(() => email)
                                                 >> ValidateEmail(() => email)) &
       "#passwd" #> SHtml.text(passwd, passwd = _) &
-      "#confirm" #> (SHtml.text(confirm, confirm = _) >> ValidateEquals(() => passwd, () => confirm)) &
+      "#confirm" #> (SHtml.text(confirm, confirm = _) >> ValidateEquals(() => confirm, () => passwd, "#passwd")) &
       "#save" #> SHtml.onSubmitUnit(save)
   }
 ```

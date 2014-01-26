@@ -340,6 +340,11 @@ object Validators {
       ValidateLength(min, max, value, Some(errorMessage))
   }
 
+  /**
+   * Validates value using regular expression.
+   *
+   * @param regex regular expression to test the value.
+   */
   case class ValidateRegex(
       regex: Regex,
       override val value: () => String,
