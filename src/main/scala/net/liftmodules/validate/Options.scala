@@ -41,9 +41,9 @@ package object options {
         ),
       "success" ->
         AnonFunc("label",
-          Jq(JsVar("label")) ~> JsFunc("closest", ".control-group")
-            ~> JsFunc("removeClass", "success")
-            ~> JsFunc("addClass", "error")
+          Jq(JsVar("label")) ~> JsFunc("closest", ".form-group")
+            ~> JsFunc("removeClass", "has-error")
+            ~> JsFunc("addClass", "has-success")
         )
     )
   }
