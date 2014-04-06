@@ -50,7 +50,7 @@ abstract class ValidationContext {
   /**
    * Add validator to this context
    */
-  def addValidator(validator: Validator): Unit
+  def addValidator(validator: Validator[_]): Unit
 
   /**
    * Perform server side validation
@@ -76,9 +76,9 @@ abstract class ValidationContext {
 }
 
 class PageValidationContext extends ValidationContext {
-  var validators = List.empty[Validator]
+  var validators = List.empty[Validator[_]]
 
-  override def addValidator(validator: Validator): Unit = validators = validator :: validators
+  override def addValidator(validator: Validator[_]): Unit = validators = validator :: validators
 
   override def validate: Boolean = validators.map(_.validate).forall(validated => validated)
 

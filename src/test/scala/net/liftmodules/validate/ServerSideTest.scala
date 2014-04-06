@@ -17,6 +17,7 @@ package net.liftmodules.validate
 
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
+import net.liftweb.http.FileParamHolder
 
 class ServerSideTest extends FlatSpec with ShouldMatchers {
 
@@ -173,5 +174,11 @@ class ServerSideTest extends FlatSpec with ShouldMatchers {
     ValidateRegex("bug".r, () => "there no bugs here").validate() should be(true)
     ValidateRegex("^0x[0-9a-fA-F]+$".r, () => "0x7UA4").validate() should be(false)
     ValidateRegex("ing$".r, () => "skiing is fine").validate() should be(false)
+  }
+
+  "ValidateFile" should "check mime type" in {
+    val fh = FileParamHolder("image", "image/jpeg", "picture.jpg", null)
+    ValidateFile("image/*", () => fh).validate() should be(true)
+    ValidateFile("audio/*", () => fh).validate() should be(false)
   }
 }

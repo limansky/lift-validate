@@ -26,8 +26,8 @@ class ValidationContextTest extends FlatSpec with ContextTest with ShouldMatcher
   "ValidationContext" should behave like anyContext(ValidationContext())
 
   it should "call validators on validating" in {
-    val v1 = mock[Validator]
-    val v2 = mock[Validator]
+    val v1 = mock[Validator[String]]
+    val v2 = mock[Validator[String]]
 
     val ctx = ValidationContext()
     ctx.addValidator(v1)

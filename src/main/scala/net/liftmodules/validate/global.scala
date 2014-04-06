@@ -21,9 +21,9 @@ package object global {
 
   implicit val dummyContext = new ValidationContext {
 
-    private object validators extends RequestVar[List[Validator]](List.empty)
+    private object validators extends RequestVar[List[Validator[_]]](List.empty)
 
-    override def addValidator(validator: Validator): Unit = validators.update(validator :: _)
+    override def addValidator(validator: Validator[_]): Unit = validators.update(validator :: _)
 
     override def validate(): Boolean =
       throw new UnsupportedOperationException("Validate called on dummy context!")

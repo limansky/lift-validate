@@ -31,7 +31,7 @@ object Validators {
   //  import scala.language.implicitConversions
 
   class Validatable(in: Elem) {
-    def >>(attr: Validator): Elem = attr(in)
+    def >>(attr: Validator[_]): Elem = attr(in)
   }
 
   implicit def elemToValidatable(e: Elem): Validatable = {
@@ -48,7 +48,7 @@ object Validators {
   case class ValidateRequired(
       override val value: () => String,
       isEnabled: () => Boolean = () => true,
-      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator[String] {
 
     override def validate(): Boolean = !isEnabled() || Option(value()).exists(_.trim.nonEmpty)
 
@@ -70,7 +70,7 @@ object Validators {
    */
   case class ValidateEmail(
       override val value: () => String,
-      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator[String] {
 
     override def validate(): Boolean = {
       val v = Option(value()) map (_.trim) getOrElse ""
@@ -92,7 +92,7 @@ object Validators {
    */
   case class ValidateUrl(
       override val value: () => String,
-      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator[String] {
 
     override def validate(): Boolean = {
       import net.liftweb.util.Helpers.tryo
@@ -122,7 +122,7 @@ object Validators {
       min: Option[Double],
       max: Option[Double],
       override val value: () => String,
-      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator[String] {
 
     override def validate(): Boolean = {
       import net.liftweb.util.Helpers.asDouble
@@ -174,7 +174,7 @@ object Validators {
       min: Option[Int],
       max: Option[Int],
       override val value: () => String,
-      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator[String] {
 
     override def validate(): Boolean = {
       import net.liftweb.util.Helpers.asInt
@@ -227,7 +227,7 @@ object Validators {
   case class ValidateEquals(override val value: () => String,
       val expected: () => String,
       selector: String,
-      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator[String] {
 
     override def validate(): Boolean = value() == expected()
 
@@ -249,7 +249,7 @@ object Validators {
    */
   case class ValidateRemote(
       override val value: () => String,
-      func: String => (Boolean, Option[String]))(implicit ctx: ValidationContext) extends Validator {
+      func: String => (Boolean, Option[String]))(implicit ctx: ValidationContext) extends Validator[String] {
 
     override def validate(): Boolean = func(value())._1
 
@@ -294,7 +294,7 @@ object Validators {
       min: Option[Int],
       max: Option[Int],
       override val value: () => String,
-      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator with Loggable {
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator[String] with Loggable {
 
     override def validate(): Boolean = {
       Option(value()) map (s => {
@@ -348,7 +348,7 @@ object Validators {
   case class ValidateRegex(
       regex: Regex,
       override val value: () => String,
-      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator {
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator[String] {
 
     override def validate() = {
       val v = Option(value()) map (_.trim) getOrElse ""
@@ -363,5 +363,26 @@ object Validators {
   object ValidateRegex {
     def apply(regex: Regex, value: () => String, errorMessage: String)(implicit ctx: ValidationContext): ValidateRegex =
       ValidateRegex(regex, value, Some(errorMessage))
+  }
+
+  case class ValidateFile(
+      acceptType: String,
+      override val value: () => FileParamHolder,
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator[FileParamHolder] {
+
+    override def validate() = {
+      val ctype = Option(value()).flatMap(h => ContentType.parse(h.mimeType).headOption)
+      val req = ContentType.parse(acceptType).headOption
+      ctype.flatMap(c => req.map(_.matches(c.theType, c.subtype))) getOrElse true
+    }
+
+    override def check: JObject = "accept" -> acceptType
+
+    override def messages: Option[JObject] = errorMessage map ("accept" -> _)
+  }
+
+  object ValidateFile {
+    def apply(acceptType: String, value: () => FileParamHolder, errorMessage: String)(implicit ctx: ValidationContext): ValidateFile =
+      ValidateFile(acceptType, value, Some(errorMessage))
   }
 }

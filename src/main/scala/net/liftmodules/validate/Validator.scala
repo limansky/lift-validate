@@ -30,11 +30,11 @@ import net.liftweb.json.JsonAST._
  * Validators generate JavaScript code for different checks and perform
  * server side validation if it required
  */
-abstract class Validator(implicit val ctx: ValidationContext) {
+abstract class Validator[T](implicit val ctx: ValidationContext) {
   /**
    * Value to be checked
    */
-  val value: () => String
+  val value: () => T
 
   /**
    * Field associated with this Validate name.
