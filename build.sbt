@@ -38,16 +38,16 @@ publishMavenStyle := true
 
 publishArtifact in Test := false
 
-//scmInfo := Some(
-//  ScmInfo(
-//    url("https://github.com/limansky/lift-salatauth"),
-//    "scm:git:https://github.com/limansky/lift-salatauth.git",
-//    Some("scm:git:git@github.com:limansky/lift-salatauth.git")
-//  )
-//)
+scmInfo := Some(
+  ScmInfo(
+    url("https://github.com/limansky/lift-validate"),
+    "scm:git:https://github.com/limansky/lift-validate.git",
+    Some("scm:git:git@github.com:limansky/lift-validate.git")
+  )
+)
 
 publishTo := {
-  val nexus = "http://maven.e-terra.su/"
+  val nexus = "http://oss.sonatype.org/"
   if (version.value.trim.endsWith("SNAPSHOT"))
     Some("snapshots" at nexus + "content/repositories/snapshots")
   else
