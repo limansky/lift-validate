@@ -22,6 +22,9 @@
   "net.liftmodules" %% "validation_2.5" % "1.0-SNAPSHOT"
 ```
 
+  Current development build status:
+  [![Build Status](https://travis-ci.org/limansky/lift-validate.svg?branch=master)](https://travis-ci.org/limansky/lift-validate)
+
 ## Usage
 
   In the simplest case the only thing you need to do is to add validators to you form snippet. For example you have form with name, email, password and password confirmation. The name must be longer than 6 characters, email is required and shall be correct and the password and confirmation shall match.
