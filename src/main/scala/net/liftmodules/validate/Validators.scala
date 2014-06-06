@@ -246,6 +246,8 @@ object Validators {
    *
    * @param func function to check value. The first element of returned tuple shows if the value is
    * validated. The second one is optional message to be shown if value is not valid.
+   *
+   * @note Currently this validator doesn't support Ajax forms because of Ajax controls has no name.
    */
   case class ValidateRemote(
       override val value: () => String,
@@ -260,7 +262,7 @@ object Validators {
         case _ =>
           S.request match {
             case Full(req) =>
-              val obj: JValue = req.param(fieldName).map(v => {
+              val obj: JValue = fieldName.flatMap(req.param).map(v => {
                 func(v) match {
                   case (true, _) => JBool(true)
                   case (false, Some(s)) => JString(s)

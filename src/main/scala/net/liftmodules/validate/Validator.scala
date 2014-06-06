@@ -39,7 +39,7 @@ abstract class Validator[T](implicit val ctx: ValidationContext) {
   /**
    * Field associated with this Validate name.
    */
-  protected var fieldName = ""
+  protected var fieldName: Option[String] = None
 
   /**
    * JavaScript rule to be checked.
@@ -72,15 +72,19 @@ abstract class Validator[T](implicit val ctx: ValidationContext) {
   def validate: Boolean
 
   def apply(in: Elem): Elem = {
-    val field = in.attributes.get("name").map(_.text)
+    val fn = in.attributes.get("name").map(_.text)
+    val fid = in.attributes.get("id").map(_.text)
 
-    field.map(n => {
-      fieldName = n
-      val elem = Jq("[name='" + n + "']")
-      val js = elem ~> JsFunc("rules", "add", jsRule)
+    val elem = fn.map(n => {
+      fieldName = Some(n)
+      Jq("[name='" + n + "']")
+    }) orElse fid.map(id => JqId(id))
+
+    elem.map(e => {
+      val js = e ~> JsFunc("rules", "add", jsRule)
       if (!ctx.hasValidators) {
         val opts = ctx.options.foldLeft(JsObj())((r, v) => r +* JsObj(v))
-        S.appendJs(elem ~> JsFunc("closest", "form") ~> JsFunc("validate", opts))
+        S.appendJs(e ~> JsFunc("closest", "form") ~> JsFunc("validate", opts))
       }
       S.appendJs(js)
       ctx.addValidator(this)
