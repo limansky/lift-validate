@@ -29,7 +29,7 @@
 
   In the simplest case the only thing you need to do is to add validators to you form snippet. For example you have form with name, email, password and password confirmation. The name must be longer than 6 characters, email is required and shall be correct and the password and confirmation shall match.
 
-```
+```Scala
 import net.liftmodules.validate.Validators._
 // implicit default context
 import net.liftmodules.validate.global._
@@ -54,19 +54,19 @@ class MySnippet {
 
   To make jQuery module work you should include it in your HTML template:
 
-```
+```html
   <script src="/classpath/validate/jquery.validate.min.js" type="text/javascript"></script>
 ```
 
 If you use ValidateInt or ValidateRegex you shall also inclide additional methods:
 
-```
+```html
   <script src="/classpath/validate/additional-methods.min.js" type="text/javascript"></script>
 ```
 
 If you want to use jQuery plugin build-in localization, you can include required file from localization folder. For example, for Russian localization:
 
-```
+```html
   <script src="/classpath/validate/lozalization/messages_ru.js" type="text/javascript"></script>
 ```
 
@@ -74,7 +74,7 @@ If you want to use jQuery plugin build-in localization, you can include required
 
   If you want to check the values on the server side before saving you can do it using ValidationContext.  Here is the modified version of previous example:
 
-```
+```Scala
 import net.liftmodules.validate.Validators._
 import net.liftmodules.validate.ValidationContext
 
@@ -104,7 +104,7 @@ class MySnippet {
 
   If you want to pass some options to jQuery validation plugin you can do it by setting Validate.options parameter in your Boot class.  Validate module provides two predefined set of options, for [Twitter Bootstrap](http://getbootstrap.com) 2 and 3. For example, for Bootstrap 3:
 
-```
+```Scala
   import net.liftmodules.validate.options._
 
   Validate.options.default.set(Bs3Options())
