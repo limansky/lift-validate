@@ -24,7 +24,7 @@ import net.liftweb.common.Full
 class GlobalContextTest extends FlatSpec with ContextTest {
   protected def session = new LiftSession("", randomString(20), Empty)
 
-  override def withFixture(test: NoArgTest) {
+  override def withFixture(test: NoArgTest) = {
     S.initIfUninitted(session) { super.withFixture(test) }
   }
 

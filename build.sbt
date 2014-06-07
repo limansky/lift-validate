@@ -10,27 +10,28 @@ licenses += ("Apache 2.0 License", url("http://www.apache.org/licenses/LICENSE-2
 
 homepage := Some(url("http://github.com/limansky/lift-validate"))
 
-liftVersion <<= liftVersion ?? "2.6-M3"
+liftVersion <<= liftVersion ?? "2.6-SNAPSHOT"
 
 liftEdition <<= liftVersion apply { _.substring(0,3) }
 
 moduleName <<= (name, liftEdition) { (n, e) => n + "_" + e }
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.1"
 
-crossScalaVersions := Seq("2.9.2")
+crossScalaVersions := Seq("2.10.4", "2.9.2")
 
-resolvers += "Java.net Maven2 Repository" at "http://download.java.net/maven/2/"
+resolvers += Resolver.sonatypeRepo("snapshots")
 
 libraryDependencies <++= liftVersion { v => Seq(
   "net.liftweb"     %% "lift-webkit"    % v         % "provided",
-  "net.liftweb"     %% "lift-json"      % v         % "provided"
+  "net.liftweb"     %% "lift-json"      % v         % "provided",
+  "org.mockito"     %  "mockito-core"   % "1.9.5"   % "test"
 )}
 
-libraryDependencies ++= Seq(
-  "org.scalatest"   %% "scalatest"      % "1.9.2"   % "test",
-  "org.mockito"     %  "mockito-core"   % "1.9.5"   % "test"
-)
+libraryDependencies <+= scalaVersion { sv =>
+  val scalatestV = if (sv == "2.9.2") "1.9.2" else "2.1.7"
+  "org.scalatest"   %% "scalatest"      % scalatestV   % "test"
+}
 
 scalariformSettings
 
