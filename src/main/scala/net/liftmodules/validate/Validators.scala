@@ -60,12 +60,27 @@ object Validators {
     override def messages: Option[JObject] = errorMessage map ("required" -> _)
   }
 
+  case class ValidateRequiredBoolean(
+      override val value: () => Boolean,
+      isEnabled: () => Boolean = () => true,
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator[Boolean] {
+
+    override def validate(): Boolean = !isEnabled() || value()
+
+    override def check: JObject = if (isEnabled()) "required" -> true else JObject(Nil)
+
+    override def messages: Option[JObject] = errorMessage map ("required" -> _)
+  }
+
   object ValidateRequired {
     def apply(value: () => String, isEnabled: () => Boolean, errorMessage: String)(implicit ctx: ValidationContext): ValidateRequired =
       ValidateRequired(value, isEnabled, Some(errorMessage))
 
     def apply(value: () => String, errorMessage: String)(implicit ctx: ValidationContext): ValidateRequired =
       ValidateRequired(value, () => true, Some(errorMessage))
+
+    def apply(value: () => Boolean, errorMessage: String)(implicit ctx: ValidationContext): ValidateRequiredBoolean =
+      ValidateRequiredBoolean(value, () => true, Some(errorMessage))
   }
 
   /**
