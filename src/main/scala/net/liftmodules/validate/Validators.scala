@@ -30,11 +30,14 @@ object Validators {
   //  To allow build for Scala 2.9.x
   //  import scala.language.implicitConversions
 
-  class Validatable(in: Elem) {
-    def >>(attr: Validator[_]): Elem = attr(in)
+  class Validatable(in: NodeSeq) {
+    def >>(attr: Validator[_]): NodeSeq = in match {
+      case e: Node => attr(e)
+      case _ => attr(in.head) ++ in.tail
+    }
   }
 
-  implicit def elemToValidatable(e: Elem): Validatable = {
+  implicit def elemToValidatable(e: NodeSeq): Validatable = {
     new Validatable(e)
   }
 
