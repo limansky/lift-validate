@@ -79,6 +79,9 @@ object Validators {
     def apply(value: () => String, errorMessage: String)(implicit ctx: ValidationContext): ValidateRequired =
       ValidateRequired(value, () => true, Some(errorMessage))
 
+    def apply(value: () => Boolean)(implicit ctx: ValidationContext): ValidateRequiredBoolean =
+      ValidateRequiredBoolean(value, () => true, None)
+
     def apply(value: () => Boolean, errorMessage: String)(implicit ctx: ValidationContext): ValidateRequiredBoolean =
       ValidateRequiredBoolean(value, () => true, Some(errorMessage))
   }

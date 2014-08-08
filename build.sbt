@@ -65,5 +65,6 @@ pomExtra := (
     <developer>
       <id>victor</id>
       <name>Victor Mikheev</name>
+      <url>https://github.com/VictorMikheev</url>
     </developer>
   </developers>)
