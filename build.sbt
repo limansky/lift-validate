@@ -10,13 +10,13 @@ licenses += ("Apache 2.0 License", url("http://www.apache.org/licenses/LICENSE-2
 
 homepage := Some(url("http://github.com/limansky/lift-validate"))
 
-liftVersion <<= liftVersion ?? "2.6-SNAPSHOT"
+liftVersion <<= liftVersion ?? "2.6-RC1"
 
 liftEdition <<= liftVersion apply { _.substring(0,3) }
 
 moduleName <<= (name, liftEdition) { (n, e) => n + "_" + e }
 
-scalaVersion := "2.11.1"
+scalaVersion := "2.11.2"
 
 crossScalaVersions := Seq("2.10.4", "2.9.2")
 
@@ -29,7 +29,7 @@ libraryDependencies <++= liftVersion { v => Seq(
 )}
 
 libraryDependencies <+= scalaVersion { sv =>
-  val scalatestV = if (sv == "2.9.2") "1.9.2" else "2.1.7"
+  val scalatestV = if (sv == "2.9.2") "1.9.2" else "2.2.1"
   "org.scalatest"   %% "scalatest"      % scalatestV   % "test"
 }
 
@@ -48,7 +48,7 @@ scmInfo := Some(
 )
 
 publishTo := {
-  val nexus = "http://oss.sonatype.org/"
+  val nexus = "https://oss.sonatype.org/"
   if (version.value.trim.endsWith("SNAPSHOT"))
     Some("snapshots" at nexus + "content/repositories/snapshots")
   else
@@ -65,5 +65,6 @@ pomExtra := (
     <developer>
       <id>victor</id>
       <name>Victor Mikheev</name>
+      <url>https://github.com/VictorMikheev</url>
     </developer>
   </developers>)

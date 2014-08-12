@@ -30,11 +30,14 @@ object Validators {
   //  To allow build for Scala 2.9.x
   //  import scala.language.implicitConversions
 
-  class Validatable(in: Elem) {
-    def >>(attr: Validator[_]): Elem = attr(in)
+  class Validatable(in: NodeSeq) {
+    def >>(attr: Validator[_]): NodeSeq = in match {
+      case e: Node => attr(e)
+      case _ => attr(in.head) ++ in.tail
+    }
   }
 
-  implicit def elemToValidatable(e: Elem): Validatable = {
+  implicit def elemToValidatable(e: NodeSeq): Validatable = {
     new Validatable(e)
   }
 
@@ -57,12 +60,30 @@ object Validators {
     override def messages: Option[JObject] = errorMessage map ("required" -> _)
   }
 
+  case class ValidateRequiredBoolean(
+      override val value: () => Boolean,
+      isEnabled: () => Boolean = () => true,
+      override val errorMessage: Option[String] = None)(implicit ctx: ValidationContext) extends Validator[Boolean] {
+
+    override def validate(): Boolean = !isEnabled() || value()
+
+    override def check: JObject = if (isEnabled()) "required" -> true else JObject(Nil)
+
+    override def messages: Option[JObject] = errorMessage map ("required" -> _)
+  }
+
   object ValidateRequired {
     def apply(value: () => String, isEnabled: () => Boolean, errorMessage: String)(implicit ctx: ValidationContext): ValidateRequired =
       ValidateRequired(value, isEnabled, Some(errorMessage))
 
     def apply(value: () => String, errorMessage: String)(implicit ctx: ValidationContext): ValidateRequired =
       ValidateRequired(value, () => true, Some(errorMessage))
+
+    def apply(value: () => Boolean)(implicit ctx: ValidationContext): ValidateRequiredBoolean =
+      ValidateRequiredBoolean(value, () => true, None)
+
+    def apply(value: () => Boolean, errorMessage: String)(implicit ctx: ValidationContext): ValidateRequiredBoolean =
+      ValidateRequiredBoolean(value, () => true, Some(errorMessage))
   }
 
   /**

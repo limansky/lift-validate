@@ -15,7 +15,7 @@
  */
 package net.liftmodules.validate
 
-import scala.xml.Elem
+import scala.xml.Node
 import net.liftweb.http.js.JsCmds._
 import net.liftweb.http.js.JE._
 import net.liftweb.http.js.jquery.JqJE._
@@ -71,7 +71,7 @@ abstract class Validator[T](implicit val ctx: ValidationContext) {
    */
   def validate: Boolean
 
-  def apply(in: Elem): Elem = {
+  def apply(in: Node): Node = {
     val fn = in.attributes.get("name").map(_.text)
     val fid = in.attributes.get("id").map(_.text)
 
