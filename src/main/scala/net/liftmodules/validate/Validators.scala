@@ -31,9 +31,9 @@ object Validators {
   //  import scala.language.implicitConversions
 
   class Validatable(in: NodeSeq) {
-    def >>(attr: Validator[_]): NodeSeq = in match {
-      case e: Node => attr(e)
-      case _ => attr(in.head) ++ in.tail
+    def >>(attr: Validator[_]): NodeSeq => NodeSeq = ns => in match {
+      case e: Node => attr(e)(ns)
+      case _ => attr(in.head)(ns) ++ in.tail
     }
   }
 

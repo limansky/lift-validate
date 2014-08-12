@@ -23,6 +23,7 @@ import net.liftweb.http.S
 import net.liftweb.json.JObject
 import net.liftweb.json.JsonDSL._
 import net.liftweb.json.JsonAST._
+import scala.xml.NodeSeq
 
 /**
  * Base validator
@@ -71,16 +72,20 @@ abstract class Validator[T](implicit val ctx: ValidationContext) {
    */
   def validate: Boolean
 
-  def apply(in: Node): Node = {
-    val fn = in.attributes.get("name").map(_.text)
-    val fid = in.attributes.get("id").map(_.text)
+  def apply(in: Node): (NodeSeq => NodeSeq) = { ns =>
+    val fn = in.attribute("name").map(_.text)
+    val fid = ns match {
+      case e: Node => e.attribute("id").map(_.text)
+      case seq if seq.length == 1 && seq(0).isInstanceOf[Node] => seq(0).attribute("id").map(_.text)
+      case _ => None
+    }
 
-    val elem = fn.map(n => {
+    val elem = fn.map { n =>
       fieldName = Some(n)
       Jq("[name='" + n + "']")
-    }) orElse fid.map(id => JqId(id))
+    } orElse fid.map(id => JqId(id))
 
-    elem.map(e => {
+    elem map { e =>
       val js = e ~> JsFunc("rules", "add", jsRule)
       if (!ctx.hasValidators) {
         val opts = ctx.options.foldLeft(JsObj())((r, v) => r +* JsObj(v))
@@ -88,7 +93,7 @@ abstract class Validator[T](implicit val ctx: ValidationContext) {
       }
       S.appendJs(js)
       ctx.addValidator(this)
-    })
+    }
     in
   }
 }
