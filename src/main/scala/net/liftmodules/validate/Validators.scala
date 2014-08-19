@@ -295,7 +295,7 @@ object Validators {
 
       S.fmapFunc(NFuncHolder(asyncFunc)) { key =>
         val url = S.encodeURL(S.contextPath + "/" + LiftRules.ajaxPath) + "?" + key + "=_"
-        "remote" -> url
+        "remote" -> (("url" -> url) ~ ("type" -> "post"))
       }
     }
 
