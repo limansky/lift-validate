@@ -16,9 +16,9 @@ liftEdition <<= liftVersion apply { _.substring(0,3) }
 
 moduleName <<= (name, liftEdition) { (n, e) => n + "_" + e }
 
-scalaVersion := "2.11.4"
+scalaVersion := "2.11.6"
 
-crossScalaVersions := Seq("2.10.4", "2.9.2")
+crossScalaVersions := Seq("2.10.5", "2.9.2")
 
 resolvers += Resolver.sonatypeRepo("snapshots")
 
@@ -29,7 +29,7 @@ libraryDependencies <++= liftVersion { v => Seq(
 )}
 
 libraryDependencies <+= scalaVersion { sv =>
-  val scalatestV = if (sv == "2.9.2") "1.9.2" else "2.2.3"
+  val scalatestV = if (sv == "2.9.2") "1.9.2" else "2.2.4"
   "org.scalatest"   %% "scalatest"      % scalatestV   % "test"
 }
 
