@@ -4,7 +4,7 @@ description := "Lift validate module"
 
 organization := "net.liftmodules"
 
-version := "1.0-SNAPSHOT"
+version := "1.0"
 
 licenses += ("Apache 2.0 License", url("http://www.apache.org/licenses/LICENSE-2.0"))
 
