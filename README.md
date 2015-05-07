@@ -19,7 +19,7 @@
   If you use sbt add the module to libraryDependencies. For example for Lift 2.5.x it will be:
 
 ```
-  "net.liftmodules" %% "validate_2.5" % "1.0-SNAPSHOT"
+  "net.liftmodules" %% "validate_2.5" % "1.0"
 ```
 
   Current development build status:
